@@ -15,6 +15,14 @@
 
 ## 更新记录
 
+### 2026-11-12
+
+- 实现用户注册、登录、退出登录
+- 登录签发 30 天有效 token，登出后写入黑名单立即失效
+- JWT 拦截器统一鉴权，业务接口按用户隔离
+- 个人资料维护：性别、生日、身高、体重、活动水平、目标类型
+- 按 Mifflin-St Jeor 公式计算 BMR / TDEE，并按减脂 / 维持 / 增肌给出每日热量目标，支持手动覆盖
+
 ### 2026-11-11
 
 - 搭建 Maven 工程（JDK 21 + Spring Boot 3.5 + MyBatis-Plus）
@@ -35,10 +43,20 @@
    ├─ java/com/example/calorie/
    │  ├─ CalorieApplication.java
    │  ├─ common/      统一响应、异常、业务码、分页
-   │  ├─ config/      MyBatis-Plus、Jackson、Swagger 配置
-   │  └─ controller/  健康检查
+   │  ├─ config/      框架配置
+   │  ├─ context/     当前登录用户上下文
+   │  ├─ controller/  认证、个人资料、健康检查
+   │  ├─ dto/         请求参数
+   │  ├─ entity/      数据库实体
+   │  ├─ interceptor/ JWT 鉴权拦截器
+   │  ├─ mapper/      MyBatis-Plus Mapper
+   │  ├─ service/     业务逻辑
+   │  ├─ task/        定时任务
+   │  ├─ util/        工具类
+   │  └─ vo/          响应对象
    └─ resources/
-      └─ application.yml
+      ├─ application.yml
+      └─ application-secret.example.yml
 ```
 
 ## 运行
