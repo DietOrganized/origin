@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>接口测试台 - 热量管理</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: "Microsoft YaHei", system-ui, sans-serif; margin: 0; padding: 16px; background: #f4f5f7; color: #222; }
+  h1 { font-size: 18px; margin: 0 0 12px; }
+  h2 { font-size: 15px; margin: 0 0 10px; padding-bottom: 6px; border-bottom: 1px solid #e3e5e8; }
+  .bar { background: #fff; border-radius: 6px; padding: 12px 14px; margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .bar .spacer { flex: 1; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(460px, 1fr)); gap: 14px; }
+  .card { background: #fff; border-radius: 6px; padding: 14px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
+  label { font-size: 13px; color: #555; display: inline-flex; align-items: center; gap: 4px; }
+  input, select, textarea { font-family: inherit; font-size: 13px; padding: 5px 7px; border: 1px solid #ccd0d5; border-radius: 4px; }
+  input[type=text], input[type=number], input[type=password], input[type=date], input[type=datetime-local] { min-width: 120px; }
+  textarea { width: 100%; min-height: 60px; resize: vertical; }
+  button { font-family: inherit; font-size: 13px; padding: 5px 12px; border: 1px solid #ccd0d5; border-radius: 4px; background: #fff; cursor: pointer; }
+  button:hover { background: #eef1f5; }
+  button.primary { background: #2f6fed; border-color: #2f6fed; color: #fff; }
+  button.primary:hover { background: #245ccb; }
+  pre { background: #1e2229; color: #d8e0ea; padding: 10px; border-radius: 4px; font-size: 12px; line-height: 1.45; max-height: 320px; overflow: auto; margin: 8px 0 0; white-space: pre-wrap; word-break: break-all; }
+  .hint { font-size: 12px; color: #888; }
+  .tag { font-size: 12px; padding: 2px 8px; border-radius: 10px; background: #eef1f5; }
+  .tag.on { background: #dbf0dc; color: #1d6b22; }
+</style>
+</head>
+<body>
+
+<h1>食物热量与菜谱推荐系统 · 接口测试台</h1>
+
+<div class="bar">
+  <span class="tag" id="authState">未登录</span>
+  <span class="hint" id="who">提示：先注册或登录，token 会自动保存 30 天</span>
+  <span class="hint" id="apiBase"></span>
+  <span class="spacer"></span>
+  <button onclick="logout()">退出登录</button>
+  <button onclick="clearAll()">清空所有结果</button>
+</div>
+
+<div class="grid">
+
+  <section class="card">
+    <h2>0. 健康检查</h2>
+    <div class="row"><button class="primary" onclick="health()">GET /health</button></div>
+    <pre id="out_health">// 点击按钮查看服务与数据库状态</pre>
+  </section>
+
+  <section class="card">
+    <h2>1. 注册 / 登录</h2>
+    <div class="row">
+      <label>用户名 <input id="username" type="text" value="demo01"></label>
+      <label>密码 <input id="password" type="password" value="123456"></label>
+      <label>昵称 <input id="nickname" type="text" value="演示账号"></label>
+    </div>
+    <div class="row">
+      <button onclick="register()">注册</button>
+      <button class="primary" onclick="login()">登录</button>
+      <button onclick="me()">当前用户 /me</button>
+    </div>
+    <pre id="out_auth">// 登录后 token 存在 localStorage，有效期 30 天</pre>
+  </section>
+
+  <section class="card">
+    <h2>2. 个人资料与热量目标</h2>
+    <div class="row">
+      <label>性别
+        <select id="p_gender">
+          <option value="MALE">男</option>
+          <option value="FEMALE">女</option>
+          <option value="UNKNOWN">未知</option>
+        </select>
+      </label>
+      <label>生日 <input id="p_birth" type="date" value="2003-05-01"></label>
+    </div>
+    <div class="row">
+      <label>身高cm <input id="p_height" type="number" value="175"></label>
+      <label>体重kg <input id="p_weight" type="number" value="70"></label>
+      <label>目标体重 <input id="p_targetWeight" type="number" value="65"></label>
+    </div>
+    <div class="row">
+      <label>活动水平
+        <select id="p_activity">
+          <option value="SEDENTARY">久坐</option>
+          <option value="LIGHT">轻度活动</option>
+          <option value="MODERATE">中度活动</option>
+          <option value="ACTIVE">高度活动</option>
+          <option value="VERY_ACTIVE">极高强度</option>
+        </select>
+      </label>
+      <label>目标
+        <select id="p_goal">
+          <option value="LOSE_FAT">减脂</option>
+          <option value="MAINTAIN">维持</option>
+          <option value="GAIN_MUSCLE">增肌</option>
+        </select>
+      </label>
+    </div>
+    <div class="row">
+      <label><input id="p_manual" type="checkbox"> 手动指定每日目标</label>
+      <label>目标热量 <input id="p_target" type="number" placeholder="留空则按公式算"></label>
+    </div>
+    <div class="row">
+      <button onclick="getProfile()">查询</button>
+      <button class="primary" onclick="saveProfile()">保存（重算 BMR/TDEE）</button>
+    </div>
+    <pre id="out_profile">// 保存后看 bmr / tdee / dailyCalorieTarget</pre>
+  </section>
+
+  <section class="card">
+    <h2>3. 食物解析（AI 算热量）</h2>
+    <div class="row">
+      <label>餐次
+        <select id="parse_mealType">
+          <option value="BREAKFAST">早餐</option>
+          <option value="LUNCH" selected>午餐</option>
+          <option value="DINNER">晚餐</option>
+          <option value="SNACK">加餐</option>
+        </select>
+      </label>
+    </div>
+    <div class="row">
+      <textarea id="parse_text">中午吃了一碗牛肉面，还喝了一瓶无糖可乐</textarea>
+    </div>
+    <div class="row">
+      <button class="primary" onclick="parseFood()">解析</button>
+      <button onclick="saveParsedAsMeal()">把解析结果存为一餐</button>
+      <span class="hint">先解析，再保存，避免重复调用 AI</span>
+    </div>
+    <pre id="out_parse">// 输入一句话，看 AI 拆出的食物明细</pre>
+  </section>
+
+  <section class="card">
+    <h2>4. 餐次记录</h2>
+    <div class="row">
+      <label>餐次
+        <select id="meal_type">
+          <option value="BREAKFAST">早餐</option>
+          <option value="LUNCH" selected>午餐</option>
+          <option value="DINNER">晚餐</option>
+          <option value="SNACK">加餐</option>
+        </select>
+      </label>
+      <label>时间 <input id="meal_time" type="datetime-local"></label>
+    </div>
+    <div class="row">
+      <textarea id="meal_raw">一碗米饭、一份鸡胸肉、一份西兰花</textarea>
+    </div>
+    <div class="row">
+      <button class="primary" onclick="createMeal()">新增（AI 解析 + 入库）</button>
+      <button onclick="seedDemo()">生成最近 5 天演示数据</button>
+    </div>
+    <div class="row">
+      <label>查询日期 <input id="meal_date" type="date"></label>
+      <button onclick="listMeals()">按日查询</button>
+      <button onclick="mealHistory()">历史分页</button>
+      <label>删除ID <input id="meal_id" type="number" style="min-width:70px"></label>
+      <button onclick="deleteMeal()">删除</button>
+    </div>
+    <pre id="out_meal">// 增删改查都在这里看结果</pre>
+  </section>
+
+  <section class="card">
+    <h2>5. 统计</h2>
+    <div class="row">
+      <button class="primary" onclick="statsToday()">今日</button>
+      <button onclick="statsWeekly()">本周</button>
+      <button onclick="statsMonthly()">本月</button>
+    </div>
+    <div class="row">
+      <label>周内任意一天 <input id="stat_date" type="date"></label>
+      <label>月份 <input id="stat_month" type="text" placeholder="2026-11" style="min-width:90px"></label>
+    </div>
+    <div class="row">
+      <label>趋势起 <input id="trend_start" type="date"></label>
+      <label>趋势止 <input id="trend_end" type="date"></label>
+      <button onclick="statsTrend()">趋势</button>
+    </div>
+    <pre id="out_stats">// daily 画折线、mealTypeDistribution 画饼图、summary 是指标卡</pre>
+  </section>
+
+  <section class="card">
+    <h2>6. 菜谱推荐</h2>
+    <div class="row">
+      <label>模式
+        <select id="r_mode">
+          <option value="INGREDIENT">按食材</option>
+          <option value="CALORIE">按热量上限</option>
+        </select>
+      </label>
+      <label>热量上限 <input id="r_max" type="number" placeholder="500" style="min-width:80px"></label>
+      <label>数量 <input id="r_count" type="number" value="2" style="min-width:60px"></label>
+    </div>
+    <div class="row">
+      <textarea id="r_ingredients">鸡胸肉、西兰花、米饭</textarea>
+    </div>
+    <div class="row">
+      <button class="primary" onclick="recommend()">AI 推荐</button>
+      <button onclick="listRecipes()">菜谱列表</button>
+      <button onclick="listFavorites()">我的收藏</button>
+      <label>菜谱ID <input id="r_id" type="number" style="min-width:70px"></label>
+      <button onclick="favRecipe()">收藏</button>
+      <button onclick="unfavRecipe()">取消收藏</button>
+      <button onclick="delRecipe()">删除</button>
+    </div>
+    <pre id="out_recipe">// 推荐结果会落库，可在列表里再查</pre>
+  </section>
+
+  <section class="card">
+    <h2>7. 智能建议</h2>
+    <div class="row">
+      <label>周期
+        <select id="a_period">
+          <option value="WEEK">周</option>
+          <option value="MONTH">月</option>
+        </select>
+      </label>
+      <button class="primary" onclick="genAdvice()">生成建议</button>
+      <button onclick="listAdvice()">历史建议</button>
+    </div>
+    <pre id="out_advice">// 需要至少 3 天记录；先点上面「生成演示数据」</pre>
+  </section>
+
+</div>
+
+<script>
+const TOKEN_KEY = 'calorie_token';
+
+// 自动识别部署上下文：/ 或 /calorie-app/ 都能用
+const CTX = (function () {
+  let p = location.pathname;
+  if (p.endsWith('/index.html')) p = p.slice(0, -'index.html'.length);
+  if (!p.endsWith('/')) p += '/';
+  return p;
+})();
+const API = CTX + 'api/v1';
+
+function token() { return localStorage.getItem(TOKEN_KEY) || ''; }
+
+function setAuthState() {
+  const t = token();
+  const el = document.getElementById('authState');
+  el.textContent = t ? '已登录（token 已保存）' : '未登录';
+  el.className = t ? 'tag on' : 'tag';
+}
+
+function show(id, data) {
+  document.getElementById(id).textContent =
+    typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+}
+
+async function api(path, method = 'GET', body = null, auth = true) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (auth && token()) headers['Authorization'] = 'Bearer ' + token();
+  const options = { method, headers };
+  if (body !== null) options.body = JSON.stringify(body);
+
+  let resp, text;
+  try {
+    resp = await fetch(API + path, options);
+    text = await resp.text();
+  } catch (e) {
+    return { status: 0, body: { code: -1, message: '网络错误: ' + e.message } };
+  }
+  let json;
+  try { json = text ? JSON.parse(text) : {}; }
+  catch { json = { code: -2, message: '返回不是 JSON: ' + text.slice(0, 200) }; }
+  if (resp.status === 401) localStorage.removeItem(TOKEN_KEY), setAuthState();
+  return { status: resp.status, body: json };
+}
+
+function log(id, res) {
+  show(id, { http: res.status, response: res.body });
+}
+
+function clearAll() {
+  document.querySelectorAll('pre').forEach(p => p.textContent = '// 已清空');
+}
+
+async function health() { log('out_health', await api('/health', 'GET', null, false)); }
+
+async function register() {
+  const res = await api('/auth/register', 'POST', {
+    username: document.getElementById('username').value,
+    password: document.getElementById('password').value,
+    nickname: document.getElementById('nickname').value
+  }, false);
+  log('out_auth', res);
+}
+
+async function login() {
+  const res = await api('/auth/login', 'POST', {
+    username: document.getElementById('username').value,
+    password: document.getElementById('password').value
+  }, false);
+  if (res.body && res.body.code === 0) {
+    localStorage.setItem(TOKEN_KEY, res.body.data.token);
+    setAuthState();
+    document.getElementById('who').textContent =
+      '已登录：' + res.body.data.user.nickname + '，有效期 ' + res.body.data.expireDays + ' 天';
+  }
+  log('out_auth', res);
+}
+
+async function logout() {
+  const res = await api('/auth/logout', 'POST');
+  localStorage.removeItem(TOKEN_KEY);
+  setAuthState();
+  document.getElementById('who').textContent = '已退出，token 已失效';
+  log('out_auth', res);
+}
+
+async function me() { log('out_auth', await api('/auth/me')); }
+
+async function getProfile() { log('out_profile', await api('/profile')); }
+
+async function saveProfile() {
+  const body = {
+    gender: document.getElementById('p_gender').value,
+    birthDate: document.getElementById('p_birth').value || null,
+    heightCm: num('p_height'),
+    weightKg: num('p_weight'),
+    targetWeightKg: num('p_targetWeight'),
+    activityLevel: document.getElementById('p_activity').value,
+    goalType: document.getElementById('p_goal').value,
+    targetManual: document.getElementById('p_manual').checked ? 1 : 0
+  };
+  if (body.targetManual === 1) body.dailyCalorieTarget = num('p_target');
+  log('out_profile', await api('/profile', 'PUT', body));
+}
+
+let lastParsed = null;
+
+async function parseFood() {
+  const res = await api('/foods/parse', 'POST', {
+    text: document.getElementById('parse_text').value,
+    mealType: document.getElementById('parse_mealType').value
+  });
+  if (res.body && res.body.code === 0) lastParsed = res.body.data;
+  log('out_parse', res);
+}
+
+async function saveParsedAsMeal() {
+  if (!lastParsed || !lastParsed.items || !lastParsed.items.length) {
+    show('out_parse', '请先点「解析」，拿到结果后再保存');
+    return;
+  }
+  const res = await api('/meals', 'POST', {
+    mealType: document.getElementById('parse_mealType').value,
+    rawInput: document.getElementById('parse_text').value,
+    items: lastParsed.items.map(i => ({
+      foodId: i.foodId, foodName: i.name, quantity: i.quantity, unit: i.unit,
+      grams: i.grams, calories: i.calories, protein: i.protein, fat: i.fat,
+      carbs: i.carbs, confidence: i.confidence, source: 'LLM'
+    }))
+  });
+  log('out_meal', res);
+}
+
+function nowLocal() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+    'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+
+async function createMeal() {
+  const body = {
+    mealType: document.getElementById('meal_type').value,
+    eatenAt: document.getElementById('meal_time').value || nowLocal(),
+    rawInput: document.getElementById('meal_raw').value
+  };
+  log('out_meal', await api('/meals', 'POST', body));
+}
+
+async function listMeals() {
+  let date = document.getElementById('meal_date').value;
+  if (!date) { date = new Date().toLocaleDateString('sv-SE'); document.getElementById('meal_date').value = date; }
+  log('out_meal', await api('/meals?date=' + date));
+}
+
+async function mealHistory() { log('out_meal', await api('/meals/history?page=1&size=10')); }
+
+async function deleteMeal() {
+  const id = document.getElementById('meal_id').value;
+  if (!id) { show('out_meal', '先填要删除的餐次 ID'); return; }
+  log('out_meal', await api('/meals/' + id, 'DELETE'));
+}
+
+async function seedDemo() {
+  const breakfast = [
+    { foodName: '鸡蛋', quantity: 1, unit: '个', grams: 50, calories: 72, protein: 6.7, fat: 4.4, carbs: 1.4 },
+    { foodName: '牛奶', quantity: 1, unit: '杯', grams: 250, calories: 135, protein: 7.5, fat: 8, carbs: 8.5 },
+    { foodName: '全麦面包', quantity: 2, unit: '片', grams: 70, calories: 172, protein: 6.3, fat: 2.3, carbs: 31.5 }
+  ];
+  const lunch = [
+    { foodName: '米饭', quantity: 1, unit: '碗', grams: 350, calories: 406, protein: 9.1, fat: 1.1, carbs: 90.7 },
+    { foodName: '鸡胸肉', quantity: 1, unit: '份', grams: 200, calories: 266, protein: 49.2, fat: 6.4, carbs: 1.2 },
+    { foodName: '西兰花', quantity: 1, unit: '份', grams: 200, calories: 72, protein: 8.2, fat: 1.2, carbs: 8.6 }
+  ];
+  const dinner = [
+    { foodName: '米饭', quantity: 1, unit: '碗', grams: 250, calories: 290, protein: 6.5, fat: 0.8, carbs: 64.8 },
+    { foodName: '牛肉（瘦）', quantity: 1, unit: '份', grams: 150, calories: 188, protein: 30.3, fat: 6.3, carbs: 3.0 },
+    { foodName: '西兰花', quantity: 1, unit: '份', grams: 200, calories: 72, protein: 8.2, fat: 1.2, carbs: 8.6 }
+  ];
+  const snack = [
+    { foodName: '香蕉', quantity: 1, unit: '根', grams: 120, calories: 112, protein: 1.7, fat: 0.2, carbs: 26.4 },
+    { foodName: '花生', quantity: 1, unit: '把', grams: 40, calories: 229, protein: 9.9, fat: 17.7, carbs: 8.7 }
+  ];
+  const plan = [['BREAKFAST', 8, breakfast], ['LUNCH', 12, lunch], ['SNACK', 15, snack], ['DINNER', 18, dinner]];
+
+  const results = [];
+  for (let d = 0; d < 5; d++) {
+    const day = new Date();
+    day.setDate(day.getDate() - d);
+    const ymd = day.toLocaleDateString('sv-SE');
+    for (const [type, hour, items] of plan) {
+      const res = await api('/meals', 'POST', {
+        mealType: type,
+        eatenAt: ymd + 'T' + String(hour).padStart(2, '0') + ':30:00',
+        items: items
+      });
+      results.push({ day: ymd, type, code: res.body.code, calories: res.body.data?.totalCalories });
+    }
+  }
+  show('out_meal', results);
+}
+
+async function statsToday() { log('out_stats', await api('/stats/today')); }
+
+async function statsWeekly() {
+  const d = document.getElementById('stat_date').value;
+  log('out_stats', await api('/stats/weekly' + (d ? '?date=' + d : '')));
+}
+
+async function statsMonthly() {
+  const m = document.getElementById('stat_month').value;
+  log('out_stats', await api('/stats/monthly' + (m ? '?month=' + m : '')));
+}
+
+async function statsTrend() {
+  const s = document.getElementById('trend_start').value;
+  const e = document.getElementById('trend_end').value;
+  if (!s || !e) { show('out_stats', '请选择趋势起止日期'); return; }
+  log('out_stats', await api('/stats/trend?start=' + s + '&end=' + e));
+}
+
+async function recommend() {
+  const mode = document.getElementById('r_mode').value;
+  const body = { mode, count: num('r_count') || 2 };
+  if (mode === 'CALORIE') body.maxCalories = num('r_max') || 500;
+  else body.ingredients = document.getElementById('r_ingredients').value
+    .split(/[、,，\s]+/).filter(Boolean);
+  body.mealType = 'DINNER';
+  const res = await api('/recipes/recommend', 'POST', body);
+  fillRecipeId(res);
+  log('out_recipe', res);
+}
+
+// 自动把返回里的第一个菜谱 ID 填进输入框，省得手动抄
+function fillRecipeId(res) {
+  const data = res && res.body && res.body.data;
+  if (!data) return;
+  const first = Array.isArray(data) ? data[0] : (data.list && data.list[0]);
+  if (first && first.id) {
+    document.getElementById('r_id').value = first.id;
+  }
+}
+
+async function listRecipes() {
+  const res = await api('/recipes?page=1&size=5');
+  fillRecipeId(res);
+  log('out_recipe', res);
+}
+
+async function listFavorites() {
+  const res = await api('/recipes?page=1&size=5&favorite=true');
+  fillRecipeId(res);
+  log('out_recipe', res);
+}
+
+function recipeId() {
+  const id = document.getElementById('r_id').value;
+  if (!id) {
+    show('out_recipe', '请先点「AI 推荐」或「菜谱列表」，ID 会自动填入；也可以手动填推荐结果里的 id');
+    return null;
+  }
+  return id;
+}
+
+async function favRecipe() {
+  const id = recipeId();
+  if (!id) return;
+  log('out_recipe', await api('/recipes/' + id + '/favorite', 'POST'));
+}
+
+async function unfavRecipe() {
+  const id = recipeId();
+  if (!id) return;
+  log('out_recipe', await api('/recipes/' + id + '/favorite', 'DELETE'));
+}
+
+async function delRecipe() {
+  const id = recipeId();
+  if (!id) return;
+  log('out_recipe', await api('/recipes/' + id, 'DELETE'));
+}
+
+async function genAdvice() {
+  log('out_advice', await api('/advice/generate', 'POST', {
+    periodType: document.getElementById('a_period').value
+  }));
+}
+
+async function listAdvice() {
+  log('out_advice', await api('/advice?limit=5'));
+}
+
+function num(id) {
+  const v = document.getElementById(id).value;
+  return v === '' ? null : Number(v);
+}
+
+setAuthState();
+document.getElementById('apiBase').textContent = '接口前缀：' + API;
+document.getElementById('meal_time').value = nowLocal();
+document.getElementById('meal_date').value = new Date().toLocaleDateString('sv-SE');
+document.getElementById('stat_date').value = new Date().toLocaleDateString('sv-SE');
+document.getElementById('stat_month').value = new Date().toLocaleDateString('sv-SE').slice(0, 7);
+document.getElementById('trend_start').value = new Date(Date.now() - 6 * 86400000).toLocaleDateString('sv-SE');
+document.getElementById('trend_end').value = new Date().toLocaleDateString('sv-SE');
+</script>
+</body>
+</html>

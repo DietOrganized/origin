@@ -15,6 +15,14 @@
 
 ## 更新记录
 
+### 2026-11-13
+
+- 接入 DeepSeek API，支持用一句话描述一餐并解析出食物、份量与热量
+- 食物库匹配优先，未命中才调用大模型，解析结果回写食物库
+- 餐次增删改查，支持直接提交自然语言记账
+- 每日汇总按天重算，为统计接口做准备
+- 新增接口调试页面，可逐项验证接口返回
+
 ### 2026-11-12
 
 - 实现用户注册、登录、退出登录
@@ -42,21 +50,25 @@
 └─ src/main/
    ├─ java/com/example/calorie/
    │  ├─ CalorieApplication.java
+   │  ├─ client/      DeepSeek 接口客户端
    │  ├─ common/      统一响应、异常、业务码、分页
    │  ├─ config/      框架配置
    │  ├─ context/     当前登录用户上下文
-   │  ├─ controller/  认证、个人资料、健康检查
+   │  ├─ controller/  认证、资料、食物解析、餐次、健康检查
    │  ├─ dto/         请求参数
    │  ├─ entity/      数据库实体
    │  ├─ interceptor/ JWT 鉴权拦截器
    │  ├─ mapper/      MyBatis-Plus Mapper
+   │  ├─ prompt/      Prompt 模板加载
    │  ├─ service/     业务逻辑
    │  ├─ task/        定时任务
    │  ├─ util/        工具类
    │  └─ vo/          响应对象
    └─ resources/
       ├─ application.yml
-      └─ application-secret.example.yml
+      ├─ application-secret.example.yml
+      ├─ prompts/     Prompt 模板
+      └─ static/      接口调试页面
 ```
 
 ## 运行
