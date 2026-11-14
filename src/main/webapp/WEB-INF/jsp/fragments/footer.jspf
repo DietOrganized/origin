@@ -1,0 +1,15 @@
+<%@ page pageEncoding="UTF-8" %>
+
+</div>
+    </main>
+    <footer>轻食记 · 让每一餐更有意义 <span>热量与营养数据仅供日常饮食参考</span></footer>
+</div>
+<dialog id="modal">
+    <div class="modal-head"><h2 id="modal-title"></h2>
+        <button id="close-modal" class="quiet" aria-label="关闭">✕</button>
+    </div>
+    <div id="modal-body"></div>
+</dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
