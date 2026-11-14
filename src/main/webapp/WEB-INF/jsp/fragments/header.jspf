@@ -2,42 +2,71 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="theme-color" content="#26745b">
-    <title>${pageLabel} · 轻食记</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/app.css">
-    <script src="${pageContext.request.contextPath}/app.js" defer></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#26745b">
+<title>${pageLabel} · 轻食记</title>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/app.css">
+<script src="${pageContext.request.contextPath}/app.js" defer>
+</script>
 </head>
 <body data-page="${activePage}" data-context="${pageContext.request.contextPath}">
-<aside class="sidebar"><a class="brand" href="${pageContext.request.contextPath}/jsp/overview"><span class="brand-icon">◒</span>轻食记<span class="brand-en">CALORIE</span></a>
-    <div class="nav-caption">我的健康空间</div>
-    <nav id="nav"><a href="${pageContext.request.contextPath}/jsp/overview" data-page="overview" class="${activePage eq 'overview' ? 'active' : ''}">◫ <span>今日概览</span></a><a href="${pageContext.request.contextPath}/jsp/meals"
+<aside class="sidebar">
+<a class="brand" href="${pageContext.request.contextPath}/jsp/overview">
+<span class="brand-icon">◒</span>轻食记<span class="brand-en">CALORIE</span>
+</a>
+<div class="nav-caption">我的健康空间</div>
+<nav id="nav">
+<a href="${pageContext.request.contextPath}/jsp/overview" data-page="overview" class="${activePage eq 'overview' ? 'active' : ''}">◫ <span>今日概览</span>
+</a>
+<a href="${pageContext.request.contextPath}/jsp/meals"
                                                                                          data-page="meals" class="${activePage eq 'meals' ? 'active' : ''}">☷
-        <span>饮食记录</span></a><a href="${pageContext.request.contextPath}/jsp/stats" data-page="stats" class="${activePage eq 'stats' ? 'active' : ''}">▥ <span>营养统计</span></a><a href="${pageContext.request.contextPath}/jsp/recipes"
+        <span>饮食记录</span>
+</a>
+<a href="${pageContext.request.contextPath}/jsp/stats" data-page="stats" class="${activePage eq 'stats' ? 'active' : ''}">▥ <span>营养统计</span>
+</a>
+<a href="${pageContext.request.contextPath}/jsp/recipes"
                                                                                                   data-page="recipes" class="${activePage eq 'recipes' ? 'active' : ''}">♧
-        <span>灵感菜谱</span></a><a href="${pageContext.request.contextPath}/jsp/advice" data-page="advice" class="${activePage eq 'advice' ? 'active' : ''}">✧ <span>智能建议</span><small>AI</small></a><a
-            href="${pageContext.request.contextPath}/jsp/profile" data-page="profile" class="${activePage eq 'profile' ? 'active' : ''}">◎ <span>个人目标</span></a></nav>
-    <div class="sidebar-bottom">
-        <div class="leaf">♧</div>
-        <strong>好好吃饭，慢慢变好。</strong>
-        <p>从认真记录每一餐开始，<br>找到属于你的健康节奏。</p></div>
-    <button class="user" id="account"><span class="avatar">轻</span><span
-            id="user-name">登录你的账户</span><span>↗</span></button>
+        <span>灵感菜谱</span>
+</a>
+<a href="${pageContext.request.contextPath}/jsp/advice" data-page="advice" class="${activePage eq 'advice' ? 'active' : ''}">✧ <span>智能建议</span>
+<small>AI</small>
+</a>
+<a
+            href="${pageContext.request.contextPath}/jsp/profile" data-page="profile" class="${activePage eq 'profile' ? 'active' : ''}">◎ <span>个人目标</span>
+</a>
+</nav>
+<div class="sidebar-bottom">
+<div class="leaf">♧</div>
+<strong>好好吃饭，慢慢变好。</strong>
+<p>从认真记录每一餐开始，<br>找到属于你的健康节奏。</p>
+</div>
+<button class="user" id="account">
+<span class="avatar">轻</span>
+<span
+            id="user-name">登录你的账户</span>
+<span>↗</span>
+</button>
 </aside>
 <div class="shell">
-    <header><span id="breadcrumb">我的健康空间 / ${pageLabel}</span>
-        <div><span id="connection" class="status">界面预览 · 第一阶段</span>
-            <button id="logout" class="quiet" hidden>退出登录</button>
-            <button class="quiet" id="settings" title="接口设置">⚙</button>
-        </div>
-    </header>
-    <main>
-        <div class="page-heading">
-            <div><span class="eyebrow">A LITTLE BETTER, EVERY DAY</span>
-                <h1 id="page-title">${pageTitle}</h1>
-                <p id="page-subtitle">${pageSubtitle}</p></div>
-            <button class="primary" id="add-meal">＋ 记录一餐</button>
-        </div>
-        <noscript><section class="error">当前为第一阶段界面预览，接口交互将在第二阶段接入。</section></noscript>
+<header>
+<span id="breadcrumb">我的健康空间 / ${pageLabel}</span>
+<div>
+<span id="connection" class="status">界面预览 · 第一阶段</span>
+<button id="logout" class="quiet" hidden>退出登录</button>
+<button class="quiet" id="settings" title="接口设置">⚙</button>
+</div>
+</header>
+<main>
+<div class="page-heading">
+<div>
+<span class="eyebrow">A LITTLE BETTER, EVERY DAY</span>
+<h1 id="page-title">${pageTitle}</h1>
+<p id="page-subtitle">${pageSubtitle}</p>
+</div>
+<button class="primary" id="add-meal">＋ 记录一餐</button>
+</div>
+<noscript>
+<section class="error">当前为第一阶段界面预览，接口交互将在第二阶段接入。</section>
+</noscript>
 <div id="page">
