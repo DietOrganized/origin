@@ -1,0 +1,5 @@
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<% request.setAttribute("activePage", "advice"); request.setAttribute("pageLabel", "智能建议"); request.setAttribute("pageTitle", "给健康，多一点灵感"); request.setAttribute("pageSubtitle", "结合真实的饮食记录，获得专属营养建议。"); %>
+<%@ include file="fragments/header.jspf" %>
+<section class="card"><h2>✧ 生成饮食分析</h2><p>至少积累 3 天饮食记录后，可生成对应周期的建议。</p><div class="toolbar" style="margin-top:20px"><label>分析周期<select disabled><option>按周分析</option><option>按月分析</option></select></label><label>周期内日期<input type="date" placeholder="" disabled></label><button class="primary" data-login>生成饮食建议</button></div><p class="subtle">AI 解析、菜谱推荐与建议合计每日最多 50 次，生成需要一些时间。</p></section><div class="grid two" style="margin-top:22px"><section class="card"><h2>历史建议</h2><div class="empty"><div class="empty-icon">♧</div>每一次分析都会保存，方便随时回顾</div></section><section class="card"><h2>让建议有据可依</h2><p>报告将结合记录天数、日均摄入、热量目标和达标天数给出建议。</p><div class="tip">坚持记录真实的饮食，比追求完美更有意义。</div></section></div>
+<%@ include file="fragments/footer.jspf" %>
