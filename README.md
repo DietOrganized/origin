@@ -1,4 +1,4 @@
-# 智能饮食助手（后端）
+# 智能饮食助手
 
 > 用户可通过手动输入记录每日饮食，系统自动识别食物并估算热量与营养成分，支持按日期查看和管理记录；同时提供热量趋势、营养素占比、餐次分布等数据统计，并根据历史饮食数据生成分析与建议，也可根据现有食材生成菜谱。
 
@@ -7,13 +7,23 @@
 | 层 | 选型 |
 | --- | --- |
 | 语言 | JDK 21 |
-| 框架 | Spring Boot 3.5、MyBatis-Plus |
+| 后端 | Spring Boot 3.5、MyBatis-Plus |
 | 数据库 | MySQL 8.0 |
 | 容器 | Tomcat 11（war 部署） |
 | 大模型 | DeepSeek API |
+| 前端 | 原生 JavaScript + JSP |
 | 构建 | Maven |
 
 ## 更新记录
+
+### 2026-11-14
+
+- 新增统计接口：今日概览、周报、月报、自定义日期区间趋势
+- 新增菜谱推荐：按现有食材或热量上限生成，支持保存与收藏
+- 新增智能建议：先由后端计算指标，再交给大模型生成周 / 月饮食建议
+- 补充页面路由，数据库不可用时给出更明确的提示
+- 数据库连接支持 `MYSQL_HOST` / `MYSQL_PORT` / `MYSQL_DATABASE` 环境变量
+- 新增非破坏性建表脚本 `sql/03_init_schema_safe.sql`
 
 ### 2026-11-13
 
@@ -45,8 +55,11 @@
 ```
 ├─ pom.xml
 ├─ sql/
-│  ├─ 01_schema.sql          建库建表
-│  └─ 02_init_food.sql       常见食物初始化
+│  ├─ 01_schema.sql              建库建表
+│  ├─ 02_init_food.sql           常见食物初始化
+│  └─ 03_init_schema_safe.sql    非破坏性建表（已存在则跳过）
+├─ tests/
+│  └─ frontend-smoke.cjs         前端逻辑冒烟测试
 └─ src/main/
    ├─ java/com/example/calorie/
    │  ├─ CalorieApplication.java
@@ -54,7 +67,7 @@
    │  ├─ common/      统一响应、异常、业务码、分页
    │  ├─ config/      框架配置
    │  ├─ context/     当前登录用户上下文
-   │  ├─ controller/  认证、资料、食物解析、餐次、健康检查
+   │  ├─ controller/  接口与页面路由
    │  ├─ dto/         请求参数
    │  ├─ entity/      数据库实体
    │  ├─ interceptor/ JWT 鉴权拦截器
@@ -64,11 +77,14 @@
    │  ├─ task/        定时任务
    │  ├─ util/        工具类
    │  └─ vo/          响应对象
-   └─ resources/
-      ├─ application.yml
-      ├─ application-secret.example.yml
-      ├─ prompts/     Prompt 模板
-      └─ static/      接口调试页面
+   ├─ resources/
+   │  ├─ application.yml
+   │  ├─ application-secret.example.yml
+   │  ├─ prompts/     Prompt 模板
+   │  └─ static/      单页版页面与接口调试页
+   └─ webapp/WEB-INF/
+      ├─ web.xml
+      └─ jsp/         JSP 多页版页面
 ```
 
 ## 运行
@@ -80,6 +96,8 @@ mysql -uroot -p --default-character-set=utf8mb4 < sql/01_schema.sql
 mysql -uroot -p --default-character-set=utf8mb4 < sql/02_init_food.sql
 ```
 
+已有数据的环境改用 `sql/03_init_schema_safe.sql`，只创建缺失的表，不会清空数据。
+
 ### 2. 配置本地参数
 
 在 `src/main/resources/` 下新建 `application-secret.yml`（已在 `.gitignore` 中排除）：
@@ -87,6 +105,7 @@ mysql -uroot -p --default-character-set=utf8mb4 < sql/02_init_food.sql
 ```yaml
 spring:
   datasource:
+    username: root
     password: 你的数据库密码
 deepseek:
   api-key: 你的 DeepSeek API Key
@@ -100,14 +119,23 @@ mvn clean package -DskipTests
 
 将 `target/calorie-app.war` 部署到 Tomcat 11，或在 IDEA 中配置 Tomcat 11 运行 `calorie-app:war exploded`。
 
-### 4. 验证
+### 4. 页面入口
+
+| 地址 | 说明 |
+| --- | --- |
+| `/` | JSP 多页版（默认入口，自动跳转到今日概览） |
+| `/index.html` | 单页版 |
+| `/api-debug.html` | 接口调试页，逐项验证接口返回 |
+| `/swagger-ui.html` | 接口文档 |
+
+### 5. 验证
 
 ```
 GET http://localhost:8080/api/v1/health
 ```
 
 ```json
-{"code":0,"data":{"app":"calorie-app","status":"UP","dbTime":"2026-11-11 19:21:37"}}
+{"code":0,"data":{"app":"calorie-app","status":"UP","dbTime":"2026-11-14 10:00:00"}}
 ```
 
 ## 约定

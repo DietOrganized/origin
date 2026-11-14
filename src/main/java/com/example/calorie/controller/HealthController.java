@@ -35,7 +35,7 @@ public class HealthController {
         } catch (Exception e) {
             log.error("数据库连通性检查失败", e);
             data.put("status", "DB_DOWN");
-            data.put("dbError", e.getMessage());
+            data.put("message", "数据库暂未连接，请检查 MySQL 服务与数据库配置");
         }
         return Result.ok(data);
     }
