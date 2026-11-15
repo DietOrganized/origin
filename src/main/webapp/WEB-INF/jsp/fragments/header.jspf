@@ -52,7 +52,7 @@
 <header>
 <span id="breadcrumb">我的健康空间 / ${pageLabel}</span>
 <div>
-<span id="connection" class="status">界面预览 · 第一阶段</span>
+<span id="connection" class="status">正在连接服务</span>
 <button id="logout" class="quiet" hidden>退出登录</button>
 <button class="quiet" id="settings" title="接口设置">⚙</button>
 </div>
@@ -67,6 +67,6 @@
 <button class="primary" id="add-meal">＋ 记录一餐</button>
 </div>
 <noscript>
-<section class="error">当前为第一阶段界面预览，接口交互将在第二阶段接入。</section>
+<section class="error">请启用 JavaScript 以登录、读取饮食数据和保存记录。</section>
 </noscript>
 <div id="page">
